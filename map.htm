@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
-  <title>filemaker map dsbois</title>
+  <title>FileMaker/leaflet.js, tuxun.fr and ds-bois.com, present: "Point Of Interest"</title>
   
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,284 +16,518 @@
   
   
 </head>
-<body style="background-color:black;color:white;">
-  
-  
-  <div>
-    <div id="map" style="width: 600px; height: 400px;display:inline-block"></div>
-    <div id="menu" style="display:inline-block"><ul id="rootmenu"><li>test13</li><li>test14</li></ul></div>
-    <div><ul id="log"></ul></div>
-  </div>
-  <script>
-    
-    let url = new URL(window.location)
-    let params = new URLSearchParams(url.search);
-    var browser = params.get('fmpro');
-    if(!browser)
-    {
-      browser=false;
-    }else
-    {
-      browser=true;
-    }
-    
-    
-    
-    function logappend(text)
-    {
+<body style="background-color:#559329" >
+  <div id="loglist"       style="display:inline-block" class="clearblock">
+    <button type="button" class="collapsible active">LOG</button>
+    <ul id="log" style="display:none"></ul></span>
+    <div id="tests"  style="display:inline-block"  class="clearblock">
+      <button type="button" class="collapsible active"  onclick='tests()'>10s tests</button>
+      <ul id="tests" style="display:none"></ul></div>
+    <div id="mainmenu">
+      <div  class="clearblock" id="map" style="width: 600px; height: 400px;display:block">
+      </div>
+      <div id="menu" > <button type="button" class="collapsible">MENU</button><ul id="rootmenu"></ul></div>
       
-      document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>"+document.getElementById('log').innerHTML;
-    }
+    </div>
     
     
-    
-    function log(text)
-    {
-      //document.getElementById('log').innerHTML="<li id='listitem'>"+text+"</li>";
-      document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>";
-    }
-    
-    
-    
-    class Submenu
-    {
-      constructor(index)
-      {
-        this.root=document.getElementById("rootmenu");
-        this.id=index;
+    <style>
+      
+      //text dark color
+      .first-color {
+        background: #083836;
+      }
+      //text light color
+      .second-color {
+        background: #66d37e;
+      }
+      
+      //bg dark color
+      .clearblock {
+        background-color: #c6e872;
+      }
+      
+      //bg light color
+      .fourth-color {
+        background: #fbffa3;
+      }
+      
+      
+      #main {
         
-        //log("created submenu"+index);
+        text-align:justify;
+        margin:auto;display:block;
+        color:#083836;}
+      
+      #loglist {
+        /*text-align:justify;max-width:20%;*/
+        float:left;position:fixed;
+        display:inline-block;
+        color:#fbffa3;
+        max-height: 400px;}
+      
+      
+      
+      #rootmenu li{margin:auto;width:100%;display:block;
+        border-top: 1px solid black;
+        background-color: #c6e872;
+        color:#083836;
       }
       
       
-      add(index,id,name,description,status,lat,long,visibility){
-        this.id=id;
-        this.root.innerHTML=this.root.innerHTML+"<li style='display:"+visibility+"'id='listitem"+index+"'>"+index+id+name+description+status+lat+long+visibility+"</li>";
-        //log("added submenu"+id);
+      
+      
+      #rootmenu li:hover {
+        background-color: #fbffa3;
+        color:#66d37e;
       }
       
+      #title{margin:auto;display:inline-block}
+      #map {margin:auto;display:block;/*max-width:80%*/;display:block}
+      #menu {margin:auto;display:block;}
+      ul {margin:0px;padding:0px;}
       
-    }
+    </style>
     
-    
-    class Menu{
-      constructor()
+    <script>
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      //https://leafletjs.com/reference.html#map-methods-for-getting-map-state
+      //https://leafletjs.com/reference.html#latlngbounds
+      
+      
+      function logappend(text)
       {
         
-        this.list=new Array();
-        this.content="<ul id='rootmenu'></ul>";
-        this.root=document.getElementById('menu');
-        this.count=0;
-        this.root.innerHTML=this.content;
-        //log("created menu");
-        //this.list=
+        document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>"+document.getElementById('log').innerHTML;
       }
       
-      add(index,id,name,description,status,lat,long,visibility)
+      
+      
+      function log(text)
       {
-        let temp=new Submenu( this.count );
-        temp.add(this.count,id,name,description,status,lat,long,visibility);
-        this.count++;
-        this.list.push(temp);
+        //document.getElementById('log').innerHTML="<li id='listitem'>"+text+"</li>";
+        document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>";
+      }
+      
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      
+      
+      var coll = document.getElementsByClassName("collapsible");
+      var i;
+      
+      for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+          this.classList.toggle("active");
+          var content = this.nextElementSibling;
+          if (content.style.display === "block") {
+            content.style.display = "none";
+          } else {
+            content.style.display = "block";
+          }
+        });
+      }
+      
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      
+      var LeafIcon = L.Icon.extend({
+        options: {
+          shadowUrl: 'leaf-shadow.png',
+          iconSize:     [38, 95],
+          shadowSize:   [50, 64],
+          iconAnchor:   [22, 94],
+          shadowAnchor: [4, 62],
+          popupAnchor:  [-3, -76]
+        }
+      });
+      
+      
+      var greenIcon = new LeafIcon({iconUrl: 'leaf-green.png'}),
+      redIcon = new LeafIcon({iconUrl: 'leaf-red.png'}),
+      orangeIcon = new LeafIcon({iconUrl: 'leaf-orange.png'});
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      
+      
+      class customMarker {
+        /* id:0,
+			name:"stuf",
+			description:"descrpt",
+            iconName:"default",
+            latitude:"default",
+            longitude:"default",
+            marker:null,
+        visibility:"default",*/
+        getLatLng()
+        {return this.marker.getLatLng();}
+        getmarker()
+        {return this.marker;}
+        remove()
+        { this.marker.remove();}
         
-        //this.root.add( id,name,description,lat,long,visibility);
-      }
-      update(index,id,name,description,status,lat,long,visibility)
-      {
-        document.getElementById('listitem'+index).innerHTML="<li style='display:"+visibility+"'id='listitem"+index+"'>"+index+id+name+description+status+lat+long+visibility+"</li>";;
-        
-      }
-      
-    }
-    
-    
-    
-    
-    var menu = new Menu();
-    //adding map
-    /////////////////////////////////////////////////
-    var map = L.map('map').setView([51.5, -0.09], 13);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-    
-    var LeafIcon = L.Icon.extend({
-      options: {
-        shadowUrl: 'leaf-shadow.png',
-        iconSize:     [38, 95],
-        shadowSize:   [50, 64],
-        iconAnchor:   [22, 94],
-        shadowAnchor: [4, 62],
-        popupAnchor:  [-3, -76]
-      }
-    });
-    
-    var greenIcon = new LeafIcon({iconUrl: 'leaf-green.png'}),
-    redIcon = new LeafIcon({iconUrl: 'leaf-red.png'}),
-    orangeIcon = new LeafIcon({iconUrl: 'leaf-orange.png'});
-    
-    
-    let customMarkers =L.Marker.extend({
-      statics: {
-        FOO: 'bar',
-        BLA: 5
-      },
-      name:"stuf",
-      description:"descrpt"
-    });
-    
-    /////////////////////////////////////////////////
-    //test zone
-    //test zone
-    var marker1=L.marker([51.5, -0.07], {icon: greenIcon}).bindPopup("I am a green leaf.");
-    var marker2=L.marker([51.495, -0.063], {icon: greenIcon}).bindPopup("I am a red leaf.");
-    var marker3=L.marker([51.49, -0.052], {icon: greenIcon}).bindPopup("I am an orange leaf.");
-    
-    //var markers=Array(marker1,marker2,marker3);
-    //let markers=[marker1,marker2,marker3];
-    let markers=new Array();
-    let markersIDs=new Array();
-    
-    if(!browser)
-    {
-      
-      //log(instanceof(marker3));
-      
-      
-      let testmarkers=[marker1,marker2,marker3];
-      for(var counter=0;counter<testmarkers.length;counter++)
+        addTo(mapm)
+        {this.marker.addTo(mapm);}
+        on(event,funct)
         {
-          testmarkers[counter].addTo(map);
+          
         }
-        
-        
-        say(0,"testname","testdesc","green",96.01,-96.02,"hidden");
-        say(1,"testname","testdesc","red",96.01,-96,"hidden");
-        say(2,"testname","testdesc","orange",96.01,-96.01,"hidden");
-        
-        //marker1.addTo(map);
-        //marker2.addTo(map);
-        //marker3.addTo(map);
-        }
-        
-        
-        //let markers=new array();//[marker1,marker2,marker3];
-        /////////////////////////////////////////////////
-        
-        
-        
-        
-        
-        
-        //map event
-        map.on('move', function(ev) {
-          log("");
-          for(var counter=0;counter<markersIDs.length;counter++)
+        constructor(id,name,description,status,latitude,longitude,visibility)
+        {
+          this.iconname=status;
+          this.iconurl="leaf-"+status+".png";
+          this.icon=new LeafIcon({iconUrl: this.iconurl});
+          
+          this.marker= L.marker([latitude,longitude],this.icon ).bindPopup(id+ " " +name+":"+description);
+          this.marker.addTo(map);
+          this.marker.setIcon(this.icon);
+          this.id=id;
+          //this.fmid=marker.id;
+          this.name=name;
+          this.description=description;
+          this.marker.on('click', function(e) {
+            this.openPopup();
+            logappend("marker.on() "+id);
+            if(browser==true)
             {
-              var counterfm=counter+1;
-              if(!map.getBounds().contains(markers[markersIDs[counter]].getLatLng()))
-              {
-                
-                //!!!  markers[markersIDs[counter]].setIcon(redIcon);
-                //       FileMaker.PerformScriptWithOption ( "testjsresult", markers[counter].getPopup().getContent());
-                logappend("marker "+markersIDs[counter]+"hidden");
-                if(browser==true)
-                {   FileMaker.PerformScriptWithOption ( "testjsresult", markersIDs[counter] + '\n' +"invisible");//+'\n'+markers[counter].getPopup().getContent());
-                }
-              }
-              else
-              {
-                
-                logappend("marker "+markersIDs[counter]+"shown");
-                if(browser==true)
-                {FileMaker.PerformScriptWithOption ( "testjsresult", markersIDs[counter] + '\n' +"visible");}
-                
-                //!!  markers[markersIDs[counter]].setIcon(greenIcon);
-                
-                //  FileMaker.PerformScriptWithOption ( "testjsresult", counter + '\n' +true);
+              FileMaker.PerformScriptWithOption ( "selectrecordfromJS", id);
+            }
+          });
+          
+          this.latitude=latitude;
+          this.longitude=longitude;
+          this.visibility=visibility;
+          
+        };
+      }
+      
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      class Submenu
+      {
+        constructor(index,marker)
+        {
+          this.root=document.getElementById("rootmenu");
+          this.id=index;
+          this.fmid=marker.id;
+          this.name=marker.name;
+          this.description=marker.description;
+          this.iconName=marker.iconName;
+          this.latitude=marker.latitude;
+          this.longitude=marker.longitude;
+          this.visibility=marker.visibility;
+          this.root.innerHTML=this.root.innerHTML+"<li style='display:"+marker.visibility+"' id='listitem"+marker.id+"'><a href='#'  style='display:block;color:green;'  onclick='popup("+index+")' >"+index+" "+marker.id+" "+marker.name+" "+marker.description+" "+marker.iconurl+" "+marker.latitude+","+marker.longitude+" "+marker.visibility+"</a></li>";
+          //				this.add(index,marker.id,marker.name,marker.description,marker.iconName,marker.latitude,marker.longigtude,marker.visibility);
+          logappend("created submenu"+index);
+        }
+        
+        add(index,id,name,description,status,lat,long,visibility){
+          logappend("added submenu"+index);
+          this.id=id;
+          //this.root.innerHTML=this.root.innerHTML+"<li style='display:"+visibility+"'id='listitem"+index+"'>"+index+id+name+description+status+lat+long+visibility+"</li>";
+          //log("added submenu"+id);
+        }
+      }
+      
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      
+      class Menu{
+        constructor()
+        {
+          this.menulist=new Array();
+          this.markersList=new Array();
+          this.content="<ul id='rootmenu'></ul>";
+          this.root=document.getElementById('menu');
+          this.count=0;
+          this.markersListIDs=new Array();
+          //this.root.innerHTML=this.content;
+          logappend("created menu");
+          //this.list=
+          
+        }
+        
+        len()
+        {return this.count;}
+        
+        add(fmid,name,description,status,lat,long,visibility)
+        {
+          
+          this.markersListIDs[this.count]=fmid;
+          this.count++;
+          var tempmarker=new customMarker(fmid,name,description,status,lat,long,visibility);
+          //note: marker.bindpopup() doesnt work as intended on safari
+          // https://github.com/Leaflet/Leaflet/issues/7331
+          
+          
+          let tempmenu=new Submenu( fmid,tempmarker );
+          
+          
+          
+          this.markersList[fmid]=tempmarker;
+          
+        }
+        
+        update(fmid,name,description,status,lat,long,visibility)
+        {
+          logappend("update fmid="+fmid+" icon="+status);
+          console.log(this.markersList.join(','));
+          console.log(this.markersListIDs.join(','));
+          
+          // var iconurl="leaf-"+status+".png";
+          
+          var tempmarker=new customMarker(fmid,name,description,status,lat,long,visibility);
+          //  logappend('updating listitem'+ this.markersList[fmid].getmarker().id+","+fmid+"iconurl="+status+",");
+          if(visibility=="visible")
+          {
+            document.getElementById('listitem'+fmid).innerHTML="<li id='listitem"+fmid+"'><a href='#'  style='display:block;color:green;' onclick='popup("+fmid+")' >"+fmid+" "+fmid+" "+name+" "+description+" "+tempmarker.iconurl+" "+lat+","+long+" "+visibility+"</a></li>";;
+          }
+          else
+          {
+            document.getElementById('listitem'+fmid).innerHTML="<li id='listitem"+fmid+"'><a href='#'  style='display:block;color:red;' onclick='popup("+fmid+")' >"+fmid+" "+fmid+" "+name+" "+description+" "+tempmarker.iconurl+" "+lat+","+long+" "+visibility+"</a></li>";;
+          }
+          // var icon=new LeafIcon({iconUrl: status});
+          this.markersList[fmid].getmarker().remove();
+          
+          
+          //tempmarker.getmarker().setIcon(icon);
+          this.markersList[fmid]=tempmarker;
+          
+          //  let tempmenu=new Submenu( fmid,tempmarker );
+          // this.menulist[fmid]=tempmenu;
+          
+        }
+        
+        getmarker(fmid)
+        {
+          return this.markersList[fmid];
+        }
+        getmarkerbyindex(jsindex)
+        {
+          console.log(ret+" getmarkerbyindex("+jsindex+")"+ this.markersList[this.markersListIDs[jsindex]]+" count="+this.markersListIDs [jsindex]);
+          console.log(this.markersList.join(','));
+          console.log(this.markersListIDs.join(','));
+          
+          var ret=this.markersList[this.markersListIDs[jsindex]];
+          if(!ret)
+          {
+          }
+          return ret;//this.markersList[jsindex];
+        }
+        
+      }
+      
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      
+      var menu = new Menu();
+      let markers=new Array();
+      let markersIDs=new Array();
+      
+      //prepare a boolean to know if we are in filemaker or firefox
+      //Danger: later we use this to know if we are under SAFARI!!!
+      let url = new URL(window.location)
+      let params = new URLSearchParams(url.search);
+      var browser = params.get('fmpro');
+      if(!browser)
+      {
+        browser=false;
+      } else
+      {
+        browser=true;
+      }
+      
+      
+      //adding map
+      var map = L.map('map').setView([51.5, -0.09], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      
+      var ZoomViewer = L.Control.extend({
+        onAdd: function () {
+          return updatePOInumber();
+        }
+      });
+      
+      function updatePOInumber()
+      {
+        var gauge = L.DomUtil.create('span');
+        //console.log("gauge="+gauge);
+        gauge.style.width = '100';
+        gauge.style.color = 'black';
+        gauge.style.textStyle = 'bold';
+        gauge.style.background = 'rgba(255,255,255,0.5)';
+        gauge.style.textAlign = 'right';
+        gauge.innerHTML = 'Initial zoom level: ' + map.getZoom() + '\nNombre de POI: '+menu.len();
+        map.on('zoomstart zoom zoomend', function (ev) {
+          gauge.innerHTML = 'Zoom level: ' + map.getZoom() + '\nNombre de POI: '+menu.len();
+        });
+        return gauge;
+      }
+      
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      
+      //map event
+      map.on('move', function(ev) {
+        //log("");
+        updatePOIvisibility();
+        
+      });
+      
+      function updatePOIvisibility()
+      {
+        for(var counter=0;counter<menu.len();counter++)
+          {
+            var counterfm=counter+1;
+            console.log("counter="+counter);
+            if(!map.getBounds().contains((menu.getmarkerbyindex(counter)).getLatLng()))
+            {
+              
+              //!!!  markers[markersIDs[counter]].setIcon(redIcon);
+              //       FileMaker.PerformScriptWithOption ( "testjsresult", markers[counter].getPopup().getContent());
+              //	logappend("marker "+markersIDs[counter]+"hidden");
+              menu.update(menu.getmarkerbyindex(counter).id,menu.getmarkerbyindex(counter).name,menu.getmarkerbyindex(counter).description,
+                menu.getmarkerbyindex(counter).iconname,menu.getmarkerbyindex(counter).latitude,menu.getmarkerbyindex(counter).longitude,"hidden");
+              if(browser==true)
+              {   FileMaker.PerformScriptWithOption ( "testjsresult", menu.getmarkerbyindex(counter).id + '\n' +"invisible");//+'\n'+markers[counter].getPopup().getContent());
               }
             }
-            //return false;
-            });
-            
-            function say(id,name,description,status,lat,long,visibility)
+            else
             {
-              //alert(markers.length+" points on map"+id);
-              //TODO:find a way to update the marker
-              //alert(markers[index]);
-              // https://www.iconfinder.com/icons/8541668/biking_bicycle_cycle_bike_icon
-              // https://www.iconfinder.com/icons/2608317/cofee_drink_glass_icon
               
-              // https://leafletjs.com/examples/custom-icons/
+              // logappend("marker "+counter+ " id "+menu.getmarkerbyindex(counter).id);
+              if(browser==true)
+              {FileMaker.PerformScriptWithOption ( "testjsresult", menu.getmarkerbyindex(counter).id + '\n' +"visible");}
               
-              var iconurl="leaf-"+status+".png";
-              var icon=new LeafIcon({iconUrl: iconurl});
-              var temp=L.marker([lat,long],icon ).bindPopup(description);;
-              //note: marker.bindpopup() doesnt work as intended on safari
-              // https://github.com/Leaflet/Leaflet/issues/7331
-              temp.on('click', function(e) {this.openPopup();});
-              temp.setIcon(icon);
-              //temp.
+              menu.update(menu.getmarkerbyindex(counter).id,menu.getmarkerbyindex(counter).name,menu.getmarkerbyindex(counter).description,
+                menu.getmarkerbyindex(counter).iconname,menu.getmarkerbyindex(counter).latitude,menu.getmarkerbyindex(counter).longitude,"visible");
+              //!!  markers[markersIDs[counter]].setIcon(greenIcon);
               
-              if(!markers[id])
-              {
-                
-                markers[id]=temp;
-                markersIDs.push(id);
-                
-                markers[id].addTo(map);
-                //temp.addTo(map);
-                
-                menu.add(markers.length,id,name,description,status,lat,long,visibility);
-                
-                
-              }
-              else {//!log("update");
-                markers[id].remove();
-                
-                markers[id]=temp;
-                //markersIDs.push(id);
-                
-                markers[id].addTo(map);
-                menu.update(markersIDs[id],id,name,description,status,lat,long,visibility);
-              }
-              //var length=markers.push(temp);
-              
-              
-              //log(markersIDs.length);
+              //  FileMaker.PerformScriptWithOption ( "testjsresult", counter + '\n' +true);
             }
+          }
+          }
+          
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          
+          function tests()
+          {
+            setTimeout(() => {
+              say(10,"redname","testdesc","red",51.500, -0.070,"hidden")
+            }, 1000);
+            
+            setTimeout(() => {
+              say(11,"redname","testdesc","red",51.500, -0.070,"hidden");
+            }, 2000);
+            
+            setTimeout(() => {
+              say(12,"orangename","testdesc","orange",51.505, -0.075,"hidden");
+            }, 3000);
+            
+            setTimeout(() => {
+              say(13,"greenname","testdesc","green",51.510, -0.080,"hidden");
+            }, 4000);
+            
+            setTimeout(() => {
+              say(14,"redname","testdesc","red",51.515, -0.085,"hidden");
+            }, 5000);
+            setTimeout(() => {
+              say(15,"orangename","testdesc","cofee",51.480, -0.090,"hidden");
+            }, 6000);
+            setTimeout(() => {
+              say(16,"greenname","testdesc","green",51.485, -0.095,"hidden");
+            }, 7000);
+            setTimeout(() => {
+              say(17,"redname","testdesc","red",51.490, -0.100,"hidden");
+            }, 8000);
+            setTimeout(() => {
+              say(18,"orangename","testdesc","orange",51.495, -0.105,"hidden");
+            }, 9000);
+            setTimeout(() => {
+              say(15,"upupupugreenname","testdesc","bicycle",51.480, -0.090,"hidden");
+            }, 10000);
             
             
+          }
+          
+          if(!browser)
+          {  tests();}
+          
+          
+          var zoomViewer = (new ZoomViewer()).addTo(map);
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          function popup(id)
+          {
+            logappend("popup "+id);
+            menu.getmarker(id).getmarker().openPopup();
+            if(browser==true)
+            {FileMaker.PerformScriptWithOption ( "selectrecordfromJS", id); }
+          }
+          
+          
+          
+          function say(fmid,name,description,status,lat,long,visibility)
+          {
+            // https://www.iconfinder.com/icons/8541668/biking_bicycle_cycle_bike_icon
+            // https://www.iconfinder.com/icons/2608317/cofee_drink_glass_icon
+            
+            // https://leafletjs.com/examples/custom-icons/
             
             
-            //https://leafletjs.com/reference.html#map-methods-for-getting-map-state
-            //https://leafletjs.com/reference.html#latlngbounds
+            if(!menu.getmarker(fmid))
+            {
+              
+              markersIDs[fmid]=menu.len();
+              menu.add(fmid,name,description,status,lat,long,visibility);
+              //markersIDs[id]=;
+              
+              // markers[markersIDs[id]]=temp;//markers.push(temp);
+              //							markers[id].addTo(map);
+              //temp.addTo(map);
+              
+              
+              //menu.add(markers.length,id,name,description,status,lat,long,visibility);
+              
+              
+            }
+            else {//!log("update");
+              // markers[markersIDs[id]].remove();
+              //markers[markersIDs[id]]=temp;
+              //markers.push(temp);
+              //markersIDs[id]=markersIDs.length;
+              
+              //temp.addTo(map);
+              menu.update(fmid,name,description,status,lat,long,visibility);
+              
+            }
+            //var length=markers.push(temp);
             
-            //zoom event is useless, move is enought?
-            /*
-map.on('zoom', function(ev) {
-//    alert("zoom"); // ev is an event object (MouseEvent in this case)
-    //alert(map.getBounds().getCenter()); // ev is an event object (MouseEvent in this case)  
-for(let counter=0;counter<markers.length;counter++)
-    {
-    if(!map.getBounds().contains(markers[counter].getLatLng()))
-        {
-            markers[counter].setIcon(redIcon);
-         }
-    else  
-        {
-                        markers[counter].setIcon(greenIcon);
-            markers[counter].addTo(map);
-        }
-    }
-
-            });*/
-            
-            </script>
-            
-            
-            
-            </body>
-            </html>
-            
+            updatePOInumber();
+            //updatePOIvisibility();
+            logappend(menu.len()+ "icons");
+          }
+          
+          
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          
+          </script>
+          
+          </body>
+          </html>
+          
