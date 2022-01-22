@@ -1,555 +1,607 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Pragma" content="no-cache" />
-    <!-- <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" /> -->
-    <title>FileMaker/leaflet.js, tuxun.fr and ds-bois.com, present: "Point Of Interest"</title>
-    
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
-    
-    
-    
-  </head>
-  <body style="background-color:#559329" >
-    <div id="loglist"       style="display:inline-block" class="clearblock">
-      <button type="button" class="collapsible active">LOG</button>
-      <ul id="log" style="display:none"></ul></span>
-      <div id="tests"  style="display:inline-block"  class="clearblock">
-        <button type="button" class="collapsible active"  onclick='tests()'>10s tests</button>
-        <ul id="tests" style="display:none"></ul></div>      
-      <div id="mainmenu">        
-        <div  class="clearblock" id="map" style="width: 600px; height: 400px;display:block">
-        </div>       
-        <div id="menu" > <button type="button" class="collapsible">MENU</button><ul id="rootmenu"></ul></div>
-        
-      </div>
-      
-      
-      <style>
-        
-        //text dark color
-          .first-color {
-            background: #083836;
-          }
-        //text light color
-          .second-color {
-            background: #66d37e;
-          }
-                
-        //bg dark color
-          .clearblock {
-            background-color: #c6e872;
-          }
-                
-        //bg light color
-          .fourth-color {
-            background: #fbffa3;
-          }
-        
-        
-        #main {
-          
-          text-align:justify;
-          margin:auto;display:block;
-          color:#083836;}
-        
-        #loglist {
-          /*text-align:justify;max-width:20%;*/
-          float:left;position:fixed;
-          display:inline-block;
-          color:#fbffa3;
-          max-height: 400px;}
-        
-        
-        
-        #rootmenu li{margin:auto;width:100%;display:block;
-          border-top: 1px solid black;
-          background-color: #c6e872;
-          color:#083836;
-        }
-        
-        
-        
-        
-        #rootmenu li:hover {
-          background-color: #fbffa3;
-          color:#66d37e;
-        }
-        
-        #title{margin:auto;display:inline-block}
-        #map {margin:auto;display:block;/*max-width:80%*/;display:block}
-        #menu {margin:auto;display:block;}
-        ul {margin:0px;padding:0px;}
-        
-      </style>
-      
-      <script>
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //https://leafletjs.com/reference.html#map-methods-for-getting-map-state
-        //https://leafletjs.com/reference.html#latlngbounds
-        
-        
-        function logappend(text)
-        {
-          
-          document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>"+document.getElementById('log').innerHTML;
-        }
-        
-        
-        
-        function log(text)
-        {
-          //document.getElementById('log').innerHTML="<li id='listitem'>"+text+"</li>";
-          document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>";
-        }
-        
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        
-        var coll = document.getElementsByClassName("collapsible");
-        var i;
-        
-        for (i = 0; i < coll.length; i++) {
-          coll[i].addEventListener("click", function() {
-            this.classList.toggle("active");
-            var content = this.nextElementSibling;
-            if (content.style.display === "block") {
-              content.style.display = "none";
-            } else {
-              content.style.display = "block";
-            }
-          });
-        }
-        
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        var LeafIcon = L.Icon.extend({
-          options: {
-            shadowUrl: 'leaf-shadow.png',
-            iconSize:     [38, 95],
-            shadowSize:   [50, 64],
-            iconAnchor:   [22, 94],
-            shadowAnchor: [4, 62],
-            popupAnchor:  [-3, -76]
-          }
-        });
-        
-        
-        var greenIcon = new LeafIcon({iconUrl: 'leaf-green.png'}),
-        redIcon = new LeafIcon({iconUrl: 'leaf-red.png'}),
-        orangeIcon = new LeafIcon({iconUrl: 'leaf-orange.png'});
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        
-        class customMarker {
-          /* id:0,
-			name:"stuf",
-			description:"descrpt",
-            iconName:"default",
-            latitude:"default",
-            longitude:"default",
-            marker:null,
-          visibility:"default",*/
-          getLatLng()
-          {return this.marker.getLatLng();}
-          getmarker()
-          {return this.marker;}
-          remove()
-          { this.marker.remove();}
-          
-          addTo(mapm)
-          {this.marker.addTo(mapm);}
-          on(event,funct)
-          {
-            
-          }
-          constructor(id,name,description,status,latitude,longitude,visibility)
-          {
-            this.iconname=status;
-            this.iconurl="leaf-"+status+".png";
-            this.icon=new LeafIcon({iconUrl: this.iconurl});
-            
-            this.marker= L.marker([latitude,longitude],this.icon ).bindPopup(id+ " " +name+":"+description);
-            this.marker.addTo(map);
-            this.marker.setIcon(this.icon);
-            this.id=id;
-            //this.fmid=marker.id;
-            this.name=name;
-            this.description=description;
-            this.marker.on('click', function(e) {
-              this.openPopup();
-              logappend("marker.on() "+id);
-              if(browser==true)
-              {
-                FileMaker.PerformScriptWithOption ( "selectrecordfromJS", id);
-              }
-            });
-            
-            this.latitude=latitude;
-            this.longitude=longitude;
-            this.visibility=visibility;
-            
-          };
-        }
-        
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        class Submenu
-        {
-          constructor(index,marker)
-          {
-            this.root=document.getElementById("rootmenu");
-            this.id=index;
-            this.fmid=marker.id;
-            this.name=marker.name;
-            this.description=marker.description;
-            this.iconName=marker.iconName;
-            this.latitude=marker.latitude;
-            this.longitude=marker.longitude;
-            this.visibility=marker.visibility;
-            this.root.innerHTML=this.root.innerHTML+"<li style='display:"+marker.visibility+"' id='listitem"+marker.id+"'><a href='#'  style='display:block;color:green;'  onclick='popup("+index+")' >"+index+" "+marker.id+" "+marker.name+" "+marker.description+" "+marker.iconurl+" "+marker.latitude+","+marker.longitude+" "+marker.visibility+"</a></li>";
-            //				this.add(index,marker.id,marker.name,marker.description,marker.iconName,marker.latitude,marker.longigtude,marker.visibility);
-            logappend("created submenu"+index);
-          }
-          
-          add(index,id,name,description,status,lat,long,visibility){
-            logappend("added submenu"+index);
-            this.id=id;
-            //this.root.innerHTML=this.root.innerHTML+"<li style='display:"+visibility+"'id='listitem"+index+"'>"+index+id+name+description+status+lat+long+visibility+"</li>";
-            //log("added submenu"+id);
-          }
-        }
-        
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        class Menu{
-          constructor()
-          {
-            this.menulist=new Array();
-            this.markersList=new Array();
-            this.content="<ul id='rootmenu'></ul>";
-            this.root=document.getElementById('menu');
-            this.count=0;
-            this.markersListIDs=new Array();
-            //this.root.innerHTML=this.content;
-            logappend("created menu");
-            //this.list=
-            
-          }
-          
-          len()
-          {return this.count;}
-          
-          add(fmid,name,description,status,lat,long,visibility)
-          {
-            
-            this.markersListIDs[this.count]=fmid;
-            this.count++;
-            var tempmarker=new customMarker(fmid,name,description,status,lat,long,visibility);
-            //note: marker.bindpopup() doesnt work as intended on safari
-            // https://github.com/Leaflet/Leaflet/issues/7331
-            
-            
-            let tempmenu=new Submenu( fmid,tempmarker );
-            
-            
-            
-            this.markersList[fmid]=tempmarker;
-            
-          }
-          
-          update(fmid,name,description,status,lat,long,visibility)
-          {
-            logappend("update fmid="+fmid+" icon="+status);
-            console.log(this.markersList.join(','));
-            console.log(this.markersListIDs.join(','));
-            
-            // var iconurl="leaf-"+status+".png";
-            
-            var tempmarker=new customMarker(fmid,name,description,status,lat,long,visibility);
-            //  logappend('updating listitem'+ this.markersList[fmid].getmarker().id+","+fmid+"iconurl="+status+",");
-            if(visibility=="visible")
-            {
-              document.getElementById('listitem'+fmid).innerHTML="<li id='listitem"+fmid+"'><a href='#'  style='display:block;color:green;' onclick='popup("+fmid+")' >"+fmid+" "+fmid+" "+name+" "+description+" "+tempmarker.iconurl+" "+lat+","+long+" "+visibility+"</a></li>";;
-            }
-            else
-            {
-              document.getElementById('listitem'+fmid).innerHTML="<li id='listitem"+fmid+"'><a href='#'  style='display:block;color:red;' onclick='popup("+fmid+")' >"+fmid+" "+fmid+" "+name+" "+description+" "+tempmarker.iconurl+" "+lat+","+long+" "+visibility+"</a></li>";;
-            }
-            // var icon=new LeafIcon({iconUrl: status});
-            this.markersList[fmid].getmarker().remove();
-            
-            
-            //tempmarker.getmarker().setIcon(icon);
-            this.markersList[fmid]=tempmarker;
-            
-            //  let tempmenu=new Submenu( fmid,tempmarker );
-            // this.menulist[fmid]=tempmenu;
-            
-          }
-          
-          getmarker(fmid)
-          {
-            return this.markersList[fmid];
-          }
-          getmarkerbyindex(jsindex)
-          {
-            console.log(ret+" getmarkerbyindex("+jsindex+")"+ this.markersList[this.markersListIDs[jsindex]]+" count="+this.markersListIDs [jsindex]);
-            console.log(this.markersList.join(','));
-            console.log(this.markersListIDs.join(','));
-            
-            var ret=this.markersList[this.markersListIDs[jsindex]];
-            if(!ret)
-            {
-            }
-            return ret;//this.markersList[jsindex];
-          }
-          
-        }
-        
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        var menu = new Menu();
-        let markers=new Array();
-        let markersIDs=new Array();
-        
-        //prepare a boolean to know if we are in filemaker or firefox
-        //Danger: later we use this to know if we are under SAFARI!!!
-        let url = new URL(window.location)
-        let params = new URLSearchParams(url.search);
-        var browser = params.get('fmpro');
-        if(!browser)
-        {
-          browser=false;
-        } else
-        {
-          browser=true;
-        }
-        
+<head>
+	<meta http-equiv="Pragma" content="no-cache" />
+	<!-- <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" /> -->
+	<title>FileMaker/leaflet.js, tuxun.fr and ds-bois.com, present: "Point Of Interest"</title>
+	
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+	
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	
+</head>
+<body style="background-color:#559329" >
+	
+	
+	
+	<div id="main">
+		
+		
+		
+		<div id="loglist"       style="display:inline-block" class="clearblock">
+			<button type="button" class="collapsible active">LOG</button>
+			<ul id="log" style="display:none"></ul></div>
+		
+		<div  id="map">
+			
+		</div>
+		
+		
 
-        //adding map
-        var map = L.map('map').setView([51.5, -0.09], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        
-        
-        var ZoomViewer = L.Control.extend({
-          onAdd: function () {
-             var gauge = L.DomUtil.create('span');
-          //console.log("gauge="+gauge);
-          gauge.style.width = '100';
-          gauge.id='gauge';
-          gauge.style.color = 'black';
-          gauge.style.textStyle = 'bold';
-          gauge.style.background = 'rgba(255,255,255,0.5)';
-          gauge.style.textAlign = 'right';
-          gauge.innerHTML = 'Initial zoom level: ' + map.getZoom() + '\nNombre de POI: '+menu.len();
+	<div id="tests"   class="clearblock">
+		<button type="button" class="testcollapsible active"  onclick='tests()'>Create 10 P.O.Is for tests</button>
+		<ul id="tests" style="display:none"></ul></div>
+	
+	<div id="menu" > <button type="button" class="collapsible">MENU</button><ul id="rootmenu"></ul></div>
 
-return gauge;
-          }
-        });
-
-            var zoomViewer = (new ZoomViewer()).addTo(map);
-   
+		</div>
 
 
- 
+<style>
+		
+		//text dark color
+		.first-color {
+			background: #083836;
+		}
+		//text light color
+		.second-color {
+			background: #66d37e;
+		}
+		
+		//bg dark color
+		.clearblock {
+			background-color: #c6e872;
+		}
+		
+		//bg light color
+		.fourth-color {
+			background: #fbffa3;
+		}
+		
+		
+
+		
+		#loglist {
+			/*text-align:justify;position:fixed;*/
+			float:right;
+			display:inline-block;
+			color:#fbffa3;
+			max-width: 20%;
+position:fixed;
+top:0;
+right:0;
+}
+		
+		
+		
+		#rootmenu li{margin:auto;width:100%;display:block;
+			border-top: 1px solid black;
+			background-color: #c6e872;
+			color:#083836;
+		}
+		
+		
+		
+		
+		#rootmenu li:hover {
+			background-color: #fbffa3;
+			color:#66d37e;
+		}
+		
+		#title{margin:auto;display:inline-block}
+
+	#map {
+			width: 600px;
+			height: 400px;
+		}
 
 
-        function updatePOInumber()
-        {
-                     document.getElementById('gauge').innerHTML = 'Zoom level: ' + map.getZoom() + '\nNombre de POI: '+menu.len();
-         
-         // return gauge;
-        }
-        
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        //map event
-       /* map.on('move', function(ev) {
-          //log("");
-          updatePOIvisibility();
-          
-        });
+html, body {
+			height: 100%;
+			margin: 0;
+		}
+	
+		#main {
+		height: 100vh; width: 100%; 
+			color:#083836;}
+
+ body { }
+ #map { height: 80vh; width: 90vw;margin:auto; }
+
+		#menu {height: 20%;margin:0;display:block;}
+		ul {margin:0px;padding:0px;}
+		
+	</style>
+	
+	<script>
+		
+		
+		/////////////////////////////////////////////////////////////////////////
+		
+		var coll = document.getElementsByClassName("collapsible");
+		var i;
+		
+		for (i = 0; i < coll.length; i++) {
+			coll[i].addEventListener("click", function() {
+				this.classList.toggle("active");
+				var content = this.nextElementSibling;
+				if (content.style.display === "block") {
+					content.style.display = "none";
+				} else {
+					content.style.display = "block";
+				}
+			});
+		}
+
+var coll = document.getElementsByClassName("testcollapsible");
+		var i;
+		
+		for (i = 0; i < coll.length; i++) {
+			coll[i].addEventListener("click", function() {
+				this.classList.toggle("active");
+				var content = this.nextElementSibling;
+				this.innerText="UPDATE 10 P.O.Is for tests";
+				if (content.style.display === "block") {
+					content.style.display = "none";
+				} else {
+					content.style.display = "block";
+
+				}
+			});
+		}
+
+
+		/////////////////////////////////////////////////////////////////////////
+		var LeafIcon = L.Icon.extend({
+			options: {
+				//shadowUrl: 'leaf-shadow.png',
+				iconSize:     [40, 95],
+				//shadowSize:   [50, 64],
+				iconAnchor:   [20, 94],
+				//shadowAnchor: [4, 62],
+				popupAnchor:  [0, 0]
+			}
+		});
+
+				var SquareIcon = L.Icon.extend({
+			options: {
+				//shadowUrl: 'leaf-shadow.png',
+				iconSize:     [40, 40],
+				//shadowSize:   [50, 64],
+				iconAnchor:   [22, 39],
+				//shadowAnchor: [4, 62],
+				popupAnchor:  [0, 0]
+			}
+		});
+		
+		var greenIcon = new LeafIcon({iconUrl: 'leaf-green.png'}),
+		redIcon = new LeafIcon({iconUrl: 'leaf-red.png'}),
+		orangeIcon = new LeafIcon({iconUrl: 'leaf-orange.png'});
+
+
+		var cofeeIcon = new SquareIcon({iconUrl: 'leaf-cofee.png'}),
+		bicycleIcon = new SquareIcon({iconUrl: 'leaf-bicycle.png'});
+
+let iconList=[
+["green",greenIcon],
+["orange",orangeIcon],
+["red",redIcon],
+["cofee",cofeeIcon],
+["bicycle",bicycleIcon]
+];
+
+
+function getIcon(name)
+	{
+	for (let j in iconList)
+		{
+			if (iconList[j][0]==name)
+				{return iconList[j][1];}
+		} 
+		logappend("icon "+name+" not found");
+	}
+
+function getRandomIconName()
+	{
+let min=0,max=iconList.length-1;
+	var j=Math.floor(Math.random() * (max - min + 1) + min);
+		logappend("j:"+j);
+		logappend(iconList[j][0]);
+	return iconList[j][0];
+		 
+
+	}
+/*
+let person = {  
+  name: 'Susan',  
+  age: 24,  
+  sayHi: function() { 
+    console.log('Susan says hi!');  
+  }
+}; 
 */
 
 
+		/////////////////////////////////////////////////////////////////////////
+		class newMarker extends L.Marker {
+			constructor(jsindex,fmid,name,description,status,latitude,longitude,visibility) {
+				var str= "leaf-"+status+".png";
+				super([latitude,longitude],getIcon(status)).bindPopup(fmid+ ":" +name+" "+description);
+				this.iconname=status;
+				this.iconurl=str;
+				this.icon=getIcon(status);//new LeafIcon({iconUrl: this.iconurl});
+				this.setIcon(this.icon);
+				this.fmid=fmid;			
+	this.jsindex=jsindex;
+				this.addTo(map);
+				this.name=name;
+				this.description=description;
+				
+				//note: marker.bindpopup() doesnt work as intended on safari
+				// https://github.com/Leaflet/Leaflet/issues/7331
+				
+				this.on('click', function(e) {
+					this.openPopup();
+					if(browser==true)
+					{
+						FileMaker.PerformScriptWithOption ( "selectrecordfromJS", fmid);
+					}
+				});
+				this.latitude=latitude;
+				this.longitude=longitude;
+				this.visibility=visibility;
+			}
+		}
+		
+		/////////////////////////////////////////////////////////////////////////
+		
+		class Submenu
+		{
+			constructor(index,marker)
+			{
+				this.root=document.getElementById("rootmenu");
+				this.id=index;
+				this.fmid=marker.fmid;
+				this.name=marker.name;
+				this.description=marker.description;
+				this.iconName=marker.iconName;
+				this.latitude=marker.latitude;
+				this.longitude=marker.longitude;
+				this.visibility=marker.visibility;
+		/*		this.root.innerHTML=this.root.innerHTML+"<li style='display:"+marker.visibility+"' id='listitem"+marker.id+"'><a href='#'  style='display:block;color:green;'  onclick='popup("+this.fmid+")' >"+index+" "+marker.id+" "+marker.name+" "+marker.description+" "+marker.iconurl+" "+marker.latitude+","+marker.longitude+" "+marker.visibility+"</a></li>";
+*/
+	if(this.visibility=="visible")
+				{
+					this.root.innerHTML=this.root.innerHTML+"<li style='display:"+marker.visibility+"' id='listitem"+this.fmid+"'><a href='#'  style='display:block;color:green;' onclick='popup("+this.fmid+")' >"+index+" "+this.fmid+" "+this.name+" "+this.description+" "+marker.iconurl+" "+this.latitude+","+this.longitude+" "+this.visibility+"</a></li>";;
+				}
+				else
+				{
+					this.root.innerHTML=this.root.innerHTML+"<li style='display:"+marker.visibility+"' id='listitem"+this.fmid+"'><a href='#'  style='display:block;color:red;' onclick='popup("+this.fmid+")' >"+index+" "+this.fmid+" "+this.name+" "+this.description+" "+marker.iconurl+" "+this.latitude+","+this.longitude+" "+this.visibility+"</a></li>";;
+				}
 
 
-        map.on('zoomstart zoom zoomend move', function (ev) {
- const myPromise = new Promise((resolve, reject) => {
-  if(updatePOIvisibility()) {
-    resolve("Promise was fulfilled");
-  } else {
-    reject("Promise was rejected");
-  }
-});
-
-          });    
 
 
+				//				this.add(index,marker.id,marker.name,marker.description,marker.iconName,marker.latitude,marker.longigtude,marker.visibility);
+				//logappend("created submenu"+index);
+			}
+			
+			update(index,fmid,name,description,status,lat,long,visibility){
+				//	logappend("added submenu"+index);
+	if(visibility=="visible")
+				{
+					document.getElementById('listitem'+fmid).innerHTML="<li id='listitem"+fmid+"'><a href='#'  style='display:block;color:green;' onclick='popup("+fmid+")' >"+index+" "+fmid+" "+name+" "+description+" "+status+" "+lat+","+long+" "+visibility+"</a></li>";;
+				}
+				else
+				{
+					document.getElementById('listitem'+fmid).innerHTML="<li id='listitem"+fmid+"'><a href='#'  style='display:block;color:red;' onclick='popup("+fmid+")' >"+index+" "+fmid+" "+name+" "+description+" "+status+" "+lat+","+long+" "+visibility+"</a></li>";;
+				}
+				//this.root.innerHTML=this.root.innerHTML+"<li style='display:"+visibility+"'id='listitem"+index+"'>"+index+id+name+description+status+lat+long+visibility+"</li>";
+				//log("added submenu"+id);
+			}
+		}
+		
+		/////////////////////////////////////////////////////////////////////////
+		
+		class Menu{
+			constructor()
+			{
+				this.menuList=new Array();
+				this.markersList=new Array();
+				this.content="<ul id='rootmenu'></ul>";
+				this.root=document.getElementById('menu');
+				this.count=0;
+				this.markersListIDs=new Array();
+				
+				
+			}
+			
+			len()
+			{return this.count;}
+			
+			add(fmid,name,description,status,lat,long,visibility)
+			{
+				
+				this.markersListIDs[this.count]=fmid;
 
+				var tempmarker=new newMarker(this.count,fmid,name,description,status,lat,long,visibility);// new newMarker([lat,long], {icon: status}).bindPopup(description);//
+				let tempmenu=new Submenu( 	this.count,tempmarker );
+this.menuList[fmid]=tempmenu;
+				this.markersList[fmid]=tempmarker;	
+			this.count++;
+			}
+			
+			update(fmid,name,description,status,lat,long,visibility)
+			{
+				//logappend('updating listitem'+ this.markersList[fmid].fmid+","+"iconurl="+status+",");
+				this.markersList[fmid].remove();
+				this.markersList[fmid]=new newMarker(this.markersList[fmid].jsindex,fmid,name,description,status,lat,long,visibility);//
+							//	let tempmenu=new Submenu( 	fmid,name,description,status,lat,long,visibility);
+			//!this.menuList[fmid].remove();
+			this.menuList[fmid].update(this.markersList[fmid].jsindex,fmid,name,description,status,lat,long,visibility);
+				
+				
+			}
+			
+			getmarker(fmid)
+			{
+				return this.markersList[fmid];
+			}
+			getmarkerbyindex(jsindex)
+			{
+				
+				return this.markersList[this.markersListIDs[jsindex]];
+				
+			}
+			
+		}
+		/////////////////////////////////////////////////////////////////////////
+		var menu = new Menu();
+		let markers=new Array();
+		let markersIDs=new Array();
+		
+		//prepare a boolean to know if we are in filemaker or firefox
+		//Danger: later we use this to know if we are under SAFARI!!!
+		let url = new URL(window.location)
+		let params = new URLSearchParams(url.search);
+		var browser = params.get('fmpro');
+		if(!browser)
+		{
+			browser=false;
+		} else
+		{
+			browser=true;
+		}
+		
+		
+		//adding map
+		var map = L.map('map').setView([51.5, -0.09], 13);
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
+		
+		
+		var ZoomViewer = L.Control.extend({
+			onAdd: function () {
+				var gauge = L.DomUtil.create('span');
+				//console.log("gauge="+gauge);
+				gauge.style.width = '100';
+				gauge.id='gauge';
+				gauge.style.color = 'black';
+				gauge.style.textStyle = 'bold';
+				gauge.style.background = 'rgba(255,255,255,0.5)';
+				gauge.style.textAlign = 'right';
+				gauge.innerHTML = 'Initial zoom level: ' + map.getZoom() + '\nNombre de POI: '+menu.len();
+				
+				return gauge;
+			}
+		});
+		var zoomViewer = (new ZoomViewer()).addTo(map);
+		
+		
+		function updatePOInumber()
+		{
+			document.getElementById('gauge').innerHTML = 'Zoom level: ' + map.getZoom() + '\nNombre de POI: '+menu.len();
+			
+			// return gauge;
+		}
+		
+		map.on('zoomend moveend move', function (ev) {
+			const myPromise = new Promise((resolve, reject) => {
+				if(updatePOIvisibility()) {
+					resolve("Promise was fulfilled");
+				} else {
+					reject("Promise was rejected");
+				}
+			});
+			
+		});
+		
+/////////////////////////////////////////////////////////////////////////
+		
+		function tests()
+		{
+			if(menu.len())
+				{
+				tests
+				}
+			
+			setTimeout(() => {
+				say(10,"redname","testdesc",getRandomIconName(),51.500, -0.070,"hidden")
+			}, 200);
+			
+			setTimeout(() => {
+				say(11,"redname","testdesc",getRandomIconName(),51.500, -0.070,"hidden");
+			}, 400);
+			
+			setTimeout(() => {
+				say(12,"orangename","testdesc",getRandomIconName(),51.505, -0.075,"hidden");
+			}, 600);
+			
+			setTimeout(() => {
+				say(13,"greenname","testdesc",getRandomIconName(),51.510, -0.080,"hidden");
+			}, 800);
+			
+			setTimeout(() => {
+				say(14,"redname","testdesc",getRandomIconName(),51.515, -0.085,"hidden");
+			}, 1000);
+			setTimeout(() => {
+				say(15,"orangename","testdesc",getRandomIconName(),51.480, -0.090,"hidden");
+			}, 1200);
+			setTimeout(() => {
+				say(16,"greenname","testdesc",getRandomIconName(),51.485, -0.095,"hidden");
+			}, 1400);
+			setTimeout(() => {
+				say(17,"redname","testdesc",getRandomIconName(),51.490, -0.100,"hidden");
+			}, 1600);
+			setTimeout(() => {
+				say(18,"orangename","testdesc",getRandomIconName(),51.495, -0.105,"hidden");
+			}, 1800);
+			setTimeout(() => {
+				say(15,"upupupugreenname","testdesc",getRandomIconName(),51.480, -0.090,"hidden");
+			}, 2000);
+			
+			
+		}
+		
+		if(!browser)
+		{
+			
+			tests();
+		}
+		
+		/////////////////////////////////////////////////////////////////////////
+		function popup(id)
+		{
+			logappend("popup "+id);
+			menu.getmarker(id).openPopup();
+			if(browser==true)
+			{FileMaker.PerformScriptWithOption ( "selectrecordfromJS", id); }
+		}
+		
+function updatePOIvisibility()
+{
+	//https://leafletjs.com/reference.html#map-methods-for-getting-map-state
+	//https://leafletjs.com/reference.html#latlngbounds
+	let mapbounds=map.getBounds();
+	
+	if(browser==true)
+	{
+		
+		for(var counter=0;counter<menu.len();counter++)
+			{
+				var counterfm=counter+1;
+				//console.log("counter="+counter);
+				if(!mapbounds.contains((menu.getmarkerbyindex(counter)).getLatLng()))
+				{
+					menu.update(menu.getmarkerbyindex(counter).id,
+						menu.getmarkerbyindex(counter).name,
+						menu.getmarkerbyindex(counter).description,
+						menu.getmarkerbyindex(counter).iconname,
+						menu.getmarkerbyindex(counter).latitude,
+						menu.getmarkerbyindex(counter).longitude,"hidden");
+					
+					FileMaker.PerformScriptWithOption ( "testjsresult", menu.getmarkerbyindex(counter).id + '\n' +"invisible");
+					
+				}
+				else
+				{
+					
+					
+					FileMaker.PerformScriptWithOption ( "testjsresult", menu.getmarkerbyindex(counter).id + '\n' +"visible");
+					
+					menu.update(menu.getmarkerbyindex(counter).id,
+						menu.getmarkerbyindex(counter).name,
+						menu.getmarkerbyindex(counter).description,
+						menu.getmarkerbyindex(counter).iconname,
+						menu.getmarkerbyindex(counter).latitude,
+						menu.getmarkerbyindex(counter).longitude,"visible");
+					
+				}
+			}
+			}
+			
+			else
+			{
+				
+				for(var counter=0;counter<menu.len();counter++)
+					{
+						var counterfm=counter+1;
+						//	console.log("counter="+counter);
+						if(!mapbounds.contains((menu.getmarkerbyindex(counter)).getLatLng()))
+						{
+							menu.update(menu.getmarkerbyindex(counter).fmid,
+								menu.getmarkerbyindex(counter).name,
+								menu.getmarkerbyindex(counter).description,
+								menu.getmarkerbyindex(counter).iconname,
+								menu.getmarkerbyindex(counter).latitude,
+								menu.getmarkerbyindex(counter).longitude,"hidden");
+							
+						}
+						else
+						{
+							
+							menu.update(menu.getmarkerbyindex(counter).fmid,
+								menu.getmarkerbyindex(counter).name,
+								menu.getmarkerbyindex(counter).description,
+								menu.getmarkerbyindex(counter).iconname,
+								menu.getmarkerbyindex(counter).latitude,
+								menu.getmarkerbyindex(counter).longitude,"visible");
+						}
+					}
+					}
+					
+					return menu.len();
+					}
 
-
-
-        function updatePOIvisibility()
-        {
-          for(var counter=0;counter<menu.len();counter++)
-            {
-              var counterfm=counter+1;
-              console.log("counter="+counter);
-              if(!map.getBounds().contains((menu.getmarkerbyindex(counter)).getLatLng()))
-              {
-                 menu.update(menu.getmarkerbyindex(counter).id,menu.getmarkerbyindex(counter).name,menu.getmarkerbyindex(counter).description,
-                  menu.getmarkerbyindex(counter).iconname,menu.getmarkerbyindex(counter).latitude,menu.getmarkerbyindex(counter).longitude,"hidden");
-                if(browser==true)
-                {   FileMaker.PerformScriptWithOption ( "testjsresult", menu.getmarkerbyindex(counter).id + '\n' +"invisible");//+'\n'+markers[counter].getPopup().getContent());
-                }
-              }
-              else
-              {
-                
-                if(browser==true)
-                {FileMaker.PerformScriptWithOption ( "testjsresult", menu.getmarkerbyindex(counter).id + '\n' +"visible");}
-                
-                menu.update(menu.getmarkerbyindex(counter).id,menu.getmarkerbyindex(counter).name,menu.getmarkerbyindex(counter).description,
-                  menu.getmarkerbyindex(counter).iconname,menu.getmarkerbyindex(counter).latitude,menu.getmarkerbyindex(counter).longitude,"visible");
-             
-              }
-            }
-            return menu.len();
-            }
-            
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            function tests()
-            {
-              setTimeout(() => {
-                say(10,"redname","testdesc","red",51.500, -0.070,"hidden")
-              }, 1000);
-              
-              setTimeout(() => {
-                say(11,"redname","testdesc","red",51.500, -0.070,"hidden");
-              }, 2000);
-              
-              setTimeout(() => {
-                say(12,"orangename","testdesc","orange",51.505, -0.075,"hidden");
-              }, 3000);
-              
-              setTimeout(() => {
-                say(13,"greenname","testdesc","green",51.510, -0.080,"hidden");
-              }, 4000);
-              
-              setTimeout(() => {
-                say(14,"redname","testdesc","red",51.515, -0.085,"hidden");
-              }, 5000);
-              setTimeout(() => {
-                say(15,"orangename","testdesc","cofee",51.480, -0.090,"hidden");
-              }, 6000);
-              setTimeout(() => {
-                say(16,"greenname","testdesc","green",51.485, -0.095,"hidden");
-              }, 7000);
-              setTimeout(() => {
-                say(17,"redname","testdesc","red",51.490, -0.100,"hidden");
-              }, 8000);
-              setTimeout(() => {
-                say(18,"orangename","testdesc","orange",51.495, -0.105,"hidden");
-              }, 9000);
-              setTimeout(() => {
-                say(15,"upupupugreenname","testdesc","bicycle",51.480, -0.090,"hidden");
-              }, 10000);
-              
-              
-            }       
-            
-            if(!browser)
-            {  tests();}
-            
-            
-
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            function popup(id)
-            {
-              logappend("popup "+id);
-              menu.getmarker(id).getmarker().openPopup();
-              if(browser==true)
-              {FileMaker.PerformScriptWithOption ( "selectrecordfromJS", id); }
-            }
-            
-            
-            
-            function say(fmid,name,description,status,lat,long,visibility)
-            {
-              // https://www.iconfinder.com/icons/8541668/biking_bicycle_cycle_bike_icon
-              // https://www.iconfinder.com/icons/2608317/cofee_drink_glass_icon
-              
-              // https://leafletjs.com/examples/custom-icons/
-              
-              
-              if(!menu.getmarker(fmid))
-              {
-                
-                markersIDs[fmid]=menu.len();
-                menu.add(fmid,name,description,status,lat,long,visibility);
-                //markersIDs[id]=;
-                
-                // markers[markersIDs[id]]=temp;//markers.push(temp);
-                //							markers[id].addTo(map);
-                //temp.addTo(map);
-                
-                
-                //menu.add(markers.length,id,name,description,status,lat,long,visibility);
-                
-                
-              }
-              else {//!log("update");
-                // markers[markersIDs[id]].remove();
-                //markers[markersIDs[id]]=temp;
-                //markers.push(temp);
-                //markersIDs[id]=markersIDs.length;
-                
-                //temp.addTo(map);
-                menu.update(fmid,name,description,status,lat,long,visibility);
-                
-              }
-              //var length=markers.push(temp);
-              
-              updatePOInumber();
-              //updatePOIvisibility();
-              logappend(menu.len()+ "icons");
-            }
-            
-            
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                      
-            </script>
-              
-            </body>
-            </html>
-            
+							
+							function logappend(text)
+							{
+								
+								document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>"+document.getElementById('log').innerHTML;
+							}
+							
+							
+							
+							function log(text)
+							{
+								//document.getElementById('log').innerHTML="<li id='listitem'>"+text+"</li>";
+								document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>";
+							}
+							
+							
+							function say(fmid,name,description,status,lat,long,visibility)
+							{
+								// https://www.iconfinder.com/icons/8541668/biking_bicycle_cycle_bike_icon
+								// https://www.iconfinder.com/icons/2608317/cofee_drink_glass_icon
+								
+								// https://leafletjs.com/examples/custom-icons/
+								
+								
+								if(!menu.getmarker(fmid))
+								{
+									
+									markersIDs[fmid]=menu.len();
+									menu.add(fmid,name,description,status,lat,long,visibility);
+									
+									
+								}
+								else {
+									menu.update(fmid,name,description,status,lat,long,visibility);
+									
+								}
+								
+								
+								updatePOInumber();
+								
+							}
+							</script>
+							</body>
+							</html>
+							
