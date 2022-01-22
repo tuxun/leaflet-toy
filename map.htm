@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+  <title>filemaker map dsbois</title>
+  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+  
+  
+  
+</head>
+<body style="background-color:black;color:white;">
+  
+  
+  <div>
+    <div id="map" style="width: 600px; height: 400px;display:inline-block"></div>
+    <div id="menu" style="display:inline-block"><ul id="rootmenu"><li>test13</li><li>test14</li></ul></div>
+    <div><ul id="log"></ul></div>
+  </div>
+  <script>
+    
+    let url = new URL(window.location)
+    let params = new URLSearchParams(url.search);
+    var browser = params.get('fmpro');
+    if(!browser)
+    {
+      browser=false;
+    }else
+    {
+      browser=true;
+    }
+    
+    
+    
+    function logappend(text)
+    {
+      
+      document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>"+document.getElementById('log').innerHTML;
+    }
+    
+    
+    
+    function log(text)
+    {
+      //document.getElementById('log').innerHTML="<li id='listitem'>"+text+"</li>";
+      document.getElementById('log').innerHTML="<li id='logitem'>"+text+"</li>";
+    }
+    
+    
+    
+    class Submenu
+    {
+      constructor(index)
+      {
+        this.root=document.getElementById("rootmenu");
+        this.id=index;
+        
+        //log("created submenu"+index);
+      }
+      
+      
+      add(index,id,name,description,status,lat,long,visibility){
+        this.id=id;
+        this.root.innerHTML=this.root.innerHTML+"<li style='display:"+visibility+"'id='listitem"+index+"'>"+index+id+name+description+status+lat+long+visibility+"</li>";
+        //log("added submenu"+id);
+      }
+      
+      
+    }
+    
+    
+    class Menu{
+      constructor()
+      {
+        
+        this.list=new Array();
+        this.content="<ul id='rootmenu'></ul>";
+        this.root=document.getElementById('menu');
+        this.count=0;
+        this.root.innerHTML=this.content;
+        //log("created menu");
+        //this.list=
+      }
+      
+      add(index,id,name,description,status,lat,long,visibility)
+      {
+        let temp=new Submenu( this.count );
+        temp.add(this.count,id,name,description,status,lat,long,visibility);
+        this.count++;
+        this.list.push(temp);
+        
+        //this.root.add( id,name,description,lat,long,visibility);
+      }
+      update(index,id,name,description,status,lat,long,visibility)
+      {
+        document.getElementById('listitem'+index).innerHTML="<li style='display:"+visibility+"'id='listitem"+index+"'>"+index+id+name+description+status+lat+long+visibility+"</li>";;
+        
+      }
+      
+    }
+    
+    
+    
+    
+    var menu = new Menu();
+    //adding map
+    /////////////////////////////////////////////////
+    var map = L.map('map').setView([51.5, -0.09], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    var LeafIcon = L.Icon.extend({
+      options: {
+        shadowUrl: 'leaf-shadow.png',
+        iconSize:     [38, 95],
+        shadowSize:   [50, 64],
+        iconAnchor:   [22, 94],
+        shadowAnchor: [4, 62],
+        popupAnchor:  [-3, -76]
+      }
+    });
+    
+    var greenIcon = new LeafIcon({iconUrl: 'leaf-green.png'}),
+    redIcon = new LeafIcon({iconUrl: 'leaf-red.png'}),
+    orangeIcon = new LeafIcon({iconUrl: 'leaf-orange.png'});
+    
+    
+    let customMarkers =L.Marker.extend({
+      statics: {
+        FOO: 'bar',
+        BLA: 5
+      },
+      name:"stuf",
+      description:"descrpt"
+    });
+    
+    /////////////////////////////////////////////////
+    //test zone
+    //test zone
+    var marker1=L.marker([51.5, -0.07], {icon: greenIcon}).bindPopup("I am a green leaf.");
+    var marker2=L.marker([51.495, -0.063], {icon: greenIcon}).bindPopup("I am a red leaf.");
+    var marker3=L.marker([51.49, -0.052], {icon: greenIcon}).bindPopup("I am an orange leaf.");
+    
+    //var markers=Array(marker1,marker2,marker3);
+    //let markers=[marker1,marker2,marker3];
+    let markers=new Array();
+    let markersIDs=new Array();
+    
+    if(!browser)
+    {
+      
+      //log(instanceof(marker3));
+      
+      
+      let testmarkers=[marker1,marker2,marker3];
+      for(var counter=0;counter<testmarkers.length;counter++)
+        {
+          testmarkers[counter].addTo(map);
+        }
+        
+        
+        say(0,"testname","testdesc","green",96.01,-96.02,"hidden");
+        say(1,"testname","testdesc","red",96.01,-96,"hidden");
+        say(2,"testname","testdesc","orange",96.01,-96.01,"hidden");
+        
+        //marker1.addTo(map);
+        //marker2.addTo(map);
+        //marker3.addTo(map);
+        }
+        
+        
+        //let markers=new array();//[marker1,marker2,marker3];
+        /////////////////////////////////////////////////
+        
+        
+        
+        
+        
+        
+        //map event
+        map.on('move', function(ev) {
+          log("");
+          for(var counter=0;counter<markersIDs.length;counter++)
+            {
+              var counterfm=counter+1;
+              if(!map.getBounds().contains(markers[markersIDs[counter]].getLatLng()))
+              {
+                
+                //!!!  markers[markersIDs[counter]].setIcon(redIcon);
+                //       FileMaker.PerformScriptWithOption ( "testjsresult", markers[counter].getPopup().getContent());
+                logappend("marker "+markersIDs[counter]+"hidden");
+                if(browser==true)
+                {   FileMaker.PerformScriptWithOption ( "testjsresult", markersIDs[counter] + '\n' +"invisible");//+'\n'+markers[counter].getPopup().getContent());
+                }
+              }
+              else
+              {
+                
+                logappend("marker "+markersIDs[counter]+"shown");
+                if(browser==true)
+                {FileMaker.PerformScriptWithOption ( "testjsresult", markersIDs[counter] + '\n' +"visible");}
+                
+                //!!  markers[markersIDs[counter]].setIcon(greenIcon);
+                
+                //  FileMaker.PerformScriptWithOption ( "testjsresult", counter + '\n' +true);
+              }
+            }
+            //return false;
+            });
+            
+            function say(id,name,description,status,lat,long,visibility)
+            {
+              //alert(markers.length+" points on map"+id);
+              //TODO:find a way to update the marker
+              //alert(markers[index]);
+              // https://www.iconfinder.com/icons/8541668/biking_bicycle_cycle_bike_icon
+              // https://www.iconfinder.com/icons/2608317/cofee_drink_glass_icon
+              
+              // https://leafletjs.com/examples/custom-icons/
+              
+              var iconurl="leaf-"+status+".png";
+              var icon=new LeafIcon({iconUrl: iconurl});
+              var temp=L.marker([lat,long],icon ).bindPopup(description);;
+              //note: marker.bindpopup() doesnt work as intended on safari
+              // https://github.com/Leaflet/Leaflet/issues/7331
+              temp.on('click', function(e) {this.openPopup();});
+              temp.setIcon(icon);
+              //temp.
+              
+              if(!markers[id])
+              {
+                
+                markers[id]=temp;
+                markersIDs.push(id);
+                
+                markers[id].addTo(map);
+                //temp.addTo(map);
+                
+                menu.add(markers.length,id,name,description,status,lat,long,visibility);
+                
+                
+              }
+              else {//!log("update");
+                markers[id].remove();
+                
+                markers[id]=temp;
+                //markersIDs.push(id);
+                
+                markers[id].addTo(map);
+                menu.update(markersIDs[id],id,name,description,status,lat,long,visibility);
+              }
+              //var length=markers.push(temp);
+              
+              
+              //log(markersIDs.length);
+            }
+            
+            
+            
+            
+            //https://leafletjs.com/reference.html#map-methods-for-getting-map-state
+            //https://leafletjs.com/reference.html#latlngbounds
+            
+            //zoom event is useless, move is enought?
+            /*
+map.on('zoom', function(ev) {
+//    alert("zoom"); // ev is an event object (MouseEvent in this case)
+    //alert(map.getBounds().getCenter()); // ev is an event object (MouseEvent in this case)  
+for(let counter=0;counter<markers.length;counter++)
+    {
+    if(!map.getBounds().contains(markers[counter].getLatLng()))
+        {
+            markers[counter].setIcon(redIcon);
+         }
+    else  
+        {
+                        markers[counter].setIcon(greenIcon);
+            markers[counter].addTo(map);
+        }
+    }
+
+            });*/
+            
+            </script>
+            
+            
+            
+            </body>
+            </html>
+            
