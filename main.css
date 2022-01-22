@@ -1,0 +1,135 @@
+
+body{}
+
+		.first-color {
+			background: #083836;
+		color:#083836;	background-color:#559329}
+
+
+		.second-color {
+			background: #66d37e;
+
+						background-color: #c6e872;
+
+
+		}
+
+
+
+
+
+
+
+		.clearblock {
+
+
+
+display:inline-block;
+		}
+
+
+
+		.floatingblock {
+
+
+
+display:inline-block;
+float:right;
+/*top:0;
+right:0;
+position:fixed;*/
+		}
+
+				ul {display:none;margin:0px;padding:0px;}
+
+
+		.fourth-color {
+			background: #fbffa3;
+					color:#fbffa3;			color:#fbffa3;			color:#66d37e;
+					}
+
+
+
+
+		#loglist {
+			/*text-align:justify;position:fixed;*/
+			float:right;
+			display:inline-block;
+
+			width: 20%;
+position:fixed;
+top:0;
+right:0;
+}
+
+
+
+#poimenu{
+			/*text-align:justify;position:fixed;*/
+			float:right;
+
+			color:#fbffa3;
+			max-width: 20%;
+
+
+}
+
+#poislist{
+			/*text-align:justify;position:fixed;*/
+			float:right;
+			display:none;
+			color:#fbffa3;/*
+			max-width: 20%;
+position:relative;*/
+
+}
+
+#poislist:active{
+			/*	float:right;
+			display:inline-block;text-align:justify;position:fixed;*/
+
+
+
+
+/*right:0;position:fixed;top:0;			max-width: 20%;*/
+
+}
+
+
+		#poislist li{margin:auto;width:100%;display:block;
+			border-top: 1px solid black;
+			background-color: #c6e872;
+			color:#083836;
+		}
+
+
+
+
+		#poislist li:hover {
+			background-color: #fbffa3;
+
+		}
+
+		#title{margin:auto;display:inline-block}
+
+	#map {
+			width: 600px;
+			height: 400px;
+
+		}
+
+
+html, body {
+
+			margin: 0;
+		}
+
+		#main {
+		height: 100vh; width: 100%;
+		}
+
+ body { }
+ #map { height: 80vh; width:100%;margin:auto; }
+
+		#menu {margin:0;display:block;}
+		#menubar {width: 100%;margin:0;display:block;}
